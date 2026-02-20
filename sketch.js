@@ -1,29 +1,24 @@
 let chart;
 let data;
-
-let canvasWidth = 1000;
+let canvasWidth = 600;
 let canvasHeight = 600;
 
 // Colours
-let backgroundColour = "#d5c4c4ff";
-
+let backgroundColour = "#e3e3e3";
 
 function preload() {
-	data = loadTable(
-		"data/dataset.csv",
-		"csv",
-		"header",
-	);
+	data = loadTable("data/dataset.csv", "csv", "header");
 }
 
 function setup() {
-    createCanvas(canvasWidth, canvasHeight);
-    chart = new Chart(data,50,450,800,400,25);
-    console.log(chart.cleanedData); 
-	console.log("Max Value:", this.maxValue);
-    noLoop();
+	createCanvas(canvasWidth, canvasHeight);
+	chart = new StackedBarChart(data, 50, 450, 400, 400, 15);
+	chart.cleanData();
+	console.log(chart.cleanedData);
+	console.log(chart.numBars);
+	console.log(chart.maxValue);
+	noLoop();
 }
-
 
 function draw() {
 	background(backgroundColour);
