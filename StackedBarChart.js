@@ -12,7 +12,7 @@ class StackedBarChart {
         this.numBars = 0;
         this.maxValue = 0;
         this.numTicks = 7;
-        this.groupBy = "Club";      // what creates the bars
+        this.groupBy = "Club";      // Switch between club and position
         this.yValues = "Appearances";   // what gets summed
 
         this.axisColour = "#474747";
@@ -27,41 +27,41 @@ class StackedBarChart {
         };
     }
 
-    cleanData() {
+cleanData() {
 
     this.chartData = [];
-
     let grouped = {};
     let max = 0;
 
     for (let i = 0; i < this.data.rows.length; i++) {
-        let group = this.data.rows[i].obj[this.groupBy];   // e.g. GK, DEF
-        let value = Number(this.data.rows[i].obj[this.yValues]); // e.g. Appearances
+        let row = this.data.rows[i].obj;
+        let group = row[this.groupBy];     
+        let stack = row[this.stackBy];    
+        let value = Number(row[this.yValues]);
         if (!grouped[group]) {
-            grouped[group] = 0;
+            grouped[group] = {};
         }
-        grouped[group] += value;
+        if (!grouped[group][stack]) {
+            grouped[group][stack] = 0;
+        }
+        grouped[group][stack] += value;
     }
-
-    // Convert grouped object into array (so draw() still works)
-    for (let key in grouped) {
-
-        if (grouped[key] > max) {
-            max = grouped[key];
+    // Convert grouped object into chartData
+    for (let group in grouped) {
+        let total = 0;
+        for (let stack in grouped[group]) {
+            total += grouped[group][stack];
         }
-
+        if (total > max) {
+            max = total;
+        }
         this.chartData.push({
-            club: key,
-            positions: {
-                [this.groupBy]: grouped[key]
-            }
+            label: group,
+            stacks: grouped[group]
         });
     }
-
     this.numBars = this.chartData.length;
-
-    // round max up to nearest 5
-    this.maxValue = ceil(max / 5) * 5;
+    this.maxValue = ceil(max / 50) * 50;
 }
 
     drawChart() {
@@ -72,7 +72,7 @@ class StackedBarChart {
         this.drawBars();
         this.drawYAxisLabels();
         this.drawXAxisLabels();
-        this.drawLegend();
+        // this.drawLegend();
 
         pop();
     }
@@ -95,7 +95,7 @@ class StackedBarChart {
 
     drawBars() {
         noStroke();
-        let barGap = (this.chartWidth - (this.barWidth * this.numBars)) / (this.numBars + 1);
+        let barGap = (this.chartWidth - (this.barWidth * this.numBars)) / (this.numBars + 1);  // Calculate the gap between bars 
 
         push();
         translate(barGap, 0);
@@ -104,21 +104,20 @@ class StackedBarChart {
             let bar = this.chartData[i];
             let x = i * (this.barWidth + barGap);
 
-            let yOffset = 0;
-            let posObj = bar.positions;
+            let yOffset = 0;  
+            let posObj = bar.stacks; // FOR EACH BAR
 
             // Draw stacked segments
-            for (let pos in posObj) {
-                let value = posObj[pos];
-                let h = this.scaler(value);
+            for (let pos in posObj) {     // Iterate over each position in the bar
+                let value = posObj[pos];  // Get the value for the position (e.g Appearances)
+                let h = this.scaler(value); // Scale the value to the chart height
 
                 fill(this.positionColours[pos] || "#888");
-                rect(x, -yOffset, this.barWidth, -h);
+                rect(x, -yOffset, this.barWidth, -h);  // Draw the next segment above the previous one
 
-                yOffset += h;
+                yOffset += h;  // Increment the yOffset for the next segment
             }
         }
-
         pop();
     }
 
@@ -159,7 +158,7 @@ class StackedBarChart {
             push();
             translate(x, 6); 
             rotate(-PI / 4);
-            text(bar.club, 0, 0);
+            text(bar.label, 0, 0);
             pop();
         }
 
@@ -167,24 +166,24 @@ class StackedBarChart {
     }
 
 
-    drawLegend() {
+    // drawLegend() {
 
-    let i = 0;
-    let x = this.chartWidth + 40;
-    let yStart = -this.chartHeight;
+    // let i = 0;
+    // let x = this.chartWidth + 40;
+    // let yStart = -this.chartHeight;
 
-    for (let pos in this.positionColours) {
+    // for (let pos in this.positionColours) {
 
-        fill(this.positionColours[pos]);
-        rect(x, yStart + (i * 25), 15, 15);
+    //     fill(this.positionColours[pos]);
+    //     rect(x, yStart + (i * 25), 15, 15);
 
-        fill(this.axisColour);
-        textAlign(LEFT, CENTER);
-        textSize(this.labelSize);
-        text(pos, x + 25, yStart + (i * 25) + 8);
+    //     fill(this.axisColour);
+    //     textAlign(LEFT, CENTER);
+    //     textSize(this.labelSize);
+    //     text(pos, x + 25, yStart + (i * 25) + 8);
 
-        i++;
-        }   
-    }
+    //     i++;
+    //     }   
+    // }
 
 }
