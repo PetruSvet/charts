@@ -1,26 +1,52 @@
-let chart;
+let barchart;
+let piechart;
 let data;
-let canvasWidth = 600;
-let canvasHeight = 600;
+let canvasWidth = 750;
+let canvasHeight = 750;
+let chartMode = "bar";
 
 // Colours
 let backgroundColour = "#e3e3e3";
 
 function preload() {
-	data = loadTable("data/dataset.csv", "csv", "header");
+    data = loadTable("data/dataset.csv", "csv", "header");
+    barchart = new StackedBarChart(data, 50, 450, 400, 400, 15);
+    piechart = new PieChart(data, 50,450,400,400,15);
 }
 
 function setup() {
-	createCanvas(canvasWidth, canvasHeight);
-	chart = new StackedBarChart(data, 50, 450, 400, 400, 15);
-	chart.cleanData();
-	console.log(chart.cleanedData);
-	console.log(chart.numBars);
-	console.log(chart.maxValue);
-	noLoop();
+    createCanvas(canvasWidth, canvasHeight);
+    setupBarChart();
+  setupPieChart();
 }
 
 function draw() {
-	background(backgroundColour);
-    chart.drawChart();
+  background(backgroundColour);
+  if (chartMode === "bar") {
+    barchart.drawChart();
+  } else {
+    piechart.drawChart();
+  }
+}
+
+function setupPieChart()
+{
+  piechart.cleanData("Nationality","Appearances");
+  console.log(piechart.cleanedData);
+}
+
+function setupBarChart()
+{
+    barchart.cleanData("Club", "Position", "Appearances");
+    console.log(barchart.cleanedData);
+    console.log(barchart.numBars);
+    console.log(barchart.maxValue);
+}
+
+function keyPressed() {
+  if (chartMode === "bar") {
+    chartMode = "pie";
+  } else {
+    chartMode = "bar";
+  }
 }
