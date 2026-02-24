@@ -8,10 +8,10 @@ class StackedBarChart {
     this.barWidth = barWidth;
     this.hoveredSegment = null;
 
-    this.colourMap = {};
-    this.legendKeys = [];
+    this.colourMap = {}; // Map to store colours for each stack
+    this.legendKeys = []; // Store keys in an array
     this.cleanedData = [];
-    //this.chartData = [];
+
     this.maxValue = 0;
     this.numTicks = 8;
     this.barParameter = "";
@@ -19,14 +19,27 @@ class StackedBarChart {
     this.valueParameter = "";
 
     this.axisColour = "#474747";
+    this.palette = [
+    "#54478C",
+    "#2C699A",
+    "#048BA8",
+    "#0DB39E",
+    "#16DB93",
+    "#83E377",
+    "#B9E769",
+    "#EFEA5A",
+    "#F1C453",
+    "#F29E4C"
+    ];
+    this.colorMap = {};
     this.axisThickness = 3;
     this.labelSize = 12;
   }
 
   cleanData(
-    barParameter,
-    stackParameter,
-    valueParameter
+    barParameter,  // What defines each bar
+    stackParameter, // What defines each stack within a bar
+    valueParameter  // What defines the value of each stack
   ) {
     this.barParameter = barParameter;
     this.stackParameter = stackParameter;
@@ -45,10 +58,10 @@ class StackedBarChart {
       let value = Number(rawValue);
 
       // 1. Find the bar (group) by label
-      let barIndex = -1;
-      for (let b = 0; b < grouped.length; b++) {
-        if (grouped[b].label === barKey) {
-          barIndex = b;
+      let barIndex = -1; 
+      for (let b = 0; b < grouped.length; b++) { 
+        if (grouped[b].label === barKey) {  
+          barIndex = b; 
           break;
         }
       }
@@ -114,12 +127,13 @@ class StackedBarChart {
       for (let s = 0; s < stacks.length; s++) {
         let key = stacks[s].key;
 
-        if (!this.colourMap[key]) {
-          this.colourMap[key] = this.generateColour();
-          this.legendKeys.push(key);
+        if (!this.colourMap[key]) { // If the colour is not already assigned
+          this.colourMap[key] = this.generateColour();  // Generate a new colour
+          this.legendKeys.push(key); // Store the key in the legend
         }
       }
     }
+    this.meanValue = this.calculateMean(); // Set the mean value after cleaning data
   }
 
   drawChart() {
@@ -133,6 +147,7 @@ class StackedBarChart {
     this.drawXAxisLabels();
     this.drawLegend();
     this.drawTooltip();
+    this.drawMeanLine();
 
     pop();
   }
@@ -197,7 +212,7 @@ drawBars() {
         };
       }
 
-      yOffset += h;
+      yOffset += h;  // Update yOffset for the next stack
     }
   }
 
@@ -250,10 +265,10 @@ drawBars() {
 
   generateColour() {
     return (
-      "#" +
-      Math.floor(Math.random() * 0xffffff)
-        .toString(16)
-        .padStart(6, "0")
+      "#" + 
+      Math.floor(Math.random() * 0xffffff) 
+        .toString(16)  
+        .padStart(6, "0") 
     );
   }
   
@@ -280,7 +295,9 @@ drawBars() {
     textAlign(CENTER, TOP);
     textSize(20);
     fill(30);
-    text(title, this.chartWidth / 2, -this.chartHeight - 40);
+    noStroke();
+    textFont("Oswald");
+    text(title, this.chartWidth / 2, -this.chartHeight - 30);
     pop();
   }
 
@@ -308,4 +325,40 @@ drawBars() {
     textAlign(LEFT, CENTER);
     text(textContent, mouseX + 10 + padding -this.posX, mouseY - 13 -this.posY);
     }
+
+    calculateMean() {
+    let totalSum = 0;
+
+    for (let i = 0; i < this.cleanedData.length; i++) { //Add all stacks 
+        let bar = this.cleanedData[i];
+        let barTotal = 0;
+
+        for (let s = 0; s < bar.stacks.length; s++) {
+        barTotal += bar.stacks[s].value;
+        }
+
+        totalSum += barTotal;
+    }
+
+    return totalSum / this.cleanedData.length;
+    }
+
+    drawMeanLine() {
+    if (!this.meanValue) return;
+
+    let y = -this.scaler(this.meanValue);
+
+    stroke("#c0392b");
+    strokeWeight(2);
+    drawingContext.setLineDash([6, 6]);
+
+    line(0, y, this.chartWidth, y);
+
+    noStroke();
+    fill("#c0392b");
+    textSize(12);
+    textAlign(LEFT, CENTER);
+    text("Mean: " + this.meanValue.toFixed(0), 5, y - 5);
+    }
+
 }

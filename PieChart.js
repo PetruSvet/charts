@@ -11,6 +11,19 @@ class PieChart {
     this.areaParameter = ""; // Column for segment values
     this.colourMap = {};
     this.legendKeys = []; 
+
+    this.palette = [
+    "#54478C",
+    "#2C699A",
+    "#048BA8",
+    "#0DB39E",
+    "#16DB93",
+    "#83E377",
+    "#B9E769",
+    "#EFEA5A",
+    "#F1C453",
+    "#F29E4C"
+    ];
     this.axisColour = "#474747"; 
     this.labelSize = 12; 
   }
@@ -19,38 +32,38 @@ class PieChart {
     this.arcParameter = arcParameter;
     this.areaParameter = areaParameter;
     this.cleanedData = [];
-    let grouped = [];
+    this.colourMap = {};
+    this.legendKeys = [];
 
-    // Loop through each row in the table
+    let grouped = {};
+
+    // Group values
     for (let i = 0; i < this.data.rows.length; i++) {
       let row = this.data.rows[i].obj;
-      let arcKey = row[arcParameter]; // Segment label
-      let rawValue = row[areaParameter]; // Segment value
-      let value = Number(rawValue);
+      let label = row[arcParameter];
+      let value = Number(row[areaParameter]);
 
-      // Find existing segment
-      let index = -1;
-      for (let g = 0; g < grouped.length; g++) {
-        if (grouped[g].label === arcKey) {
-          index = g;
-          break;
-        }
+      if (!grouped[label]) {
+        grouped[label] = 0;
       }
-      // Create segment if missing
-      if (index === -1) {
-        grouped.push({ label: arcKey, value: 0 });
-        index = grouped.length - 1;
-      }
-      grouped[index].value += value;
+      grouped[label] += value;
     }
-    this.cleanedData = grouped;
 
-    // Assign random colours to each segment
-    this.legendKeys = [];
-    for (let i = 0; i < grouped.length; i++) {
-      let key = grouped[i].label;
-      this.colourMap[key] = this.generateColour();
-      this.legendKeys.push(key);
+    // Convert object into array
+    let labels = Object.keys(grouped).sort();
+
+    for (let i = 0; i < labels.length; i++) {
+      let label = labels[i];
+
+      this.cleanedData.push({
+        label: label,
+        value: grouped[label]
+      });
+
+      this.colourMap[label] =
+        this.palette[i % this.palette.length];
+
+      this.legendKeys.push(label);
     }
   }
 
@@ -68,7 +81,7 @@ class PieChart {
     for (let i = 0; i < this.cleanedData.length; i++) {
       let segment = this.cleanedData[i];
       let angle = (segment.value / total) * TWO_PI;
-      fill(this.colourMap[segment.label]);
+      fill(this.colourMap[this.cleanedData[i].label]);
       stroke(255);
       strokeWeight(1);
       arc(
@@ -81,35 +94,36 @@ class PieChart {
         PIE
       );
       // Mouse hover detection
-      let dx = mouseX - (this.posX + this.chartWidth / 2);
-      let dy = mouseY - (this.posY - this.chartHeight / 2);
-      let distFromCenter = sqrt(dx * dx + dy * dy);
-      let mouseAngle = atan2(dy, dx);
-      if (mouseAngle < 0) mouseAngle += TWO_PI;
+      let dx = mouseX - (this.posX + this.chartWidth / 2);  // Calculate x offset
+      let dy = mouseY - (this.posY - this.chartHeight / 2); // Calculate y offset
+      let distFromCenter = sqrt(dx * dx + dy * dy);  // Calculate distance from center
+      let mouseAngle = atan2(dy, dx); // Calculate the angle of the mouse position
+      if (mouseAngle < 0) mouseAngle += TWO_PI; // Normalize angle to be positive
       if (
-        distFromCenter < radius &&
-        mouseAngle > lastAngle &&
-        mouseAngle < lastAngle + angle
+        distFromCenter < radius && // Check if mouse is within the radius
+        mouseAngle > lastAngle && // Check if mouse angle is within segment
+        mouseAngle < lastAngle + angle // Check if mouse angle is within segment
       ) {
-        this.hoveredSegment = {
-          label: segment.label,
-          value: segment.value,
-          percent: ((segment.value / total) * 100).toFixed(2),
+        this.hoveredSegment = { // Store hovered segment information
+          label: segment.label, // Segment label
+          value: segment.value, // Segment value
+          percent: ((segment.value / total) * 100).toFixed(2), // Segment percentage
         };
       }
-      lastAngle += angle;
+      lastAngle += angle; // Update lastAngle for the next segment
     }
+
   }
 
   // Draws the legend for the pie chart
   drawLegend() {
-    let x = this.chartWidth + 40;
+    let x = this.chartWidth + 40; 
     let yStart = -this.chartHeight;
     textAlign(LEFT, CENTER);
     textSize(this.labelSize);
     for (let i = 0; i < this.legendKeys.length; i++) {
       let key = this.legendKeys[i];
-      fill(this.colourMap[key]);
+      fill(this.colorMap[this.cleanedData[i].label]);
       rect(x, yStart + i * 25, 15, 15);
       fill(this.axisColour);
       text(key, x + 25, yStart + i * 25 + 8);
@@ -122,18 +136,9 @@ class PieChart {
     textAlign(CENTER, TOP);
     textSize(20);
     fill(30);
-    text(title, this.chartWidth / 2, -this.chartHeight - 40);
+    textFont("Oswald");
+    text(title, this.chartWidth / 2, -this.chartHeight - 30);
     pop();
-  }
-
-  // Generates a random hex colour for segments
-  generateColour() {
-    return (
-      "#" +
-      Math.floor(Math.random() * 0xffffff)
-        .toString(16)
-        .padStart(6, "0")
-    );
   }
 
   // Draws a tooltip when hovering over a segment
@@ -142,7 +147,7 @@ class PieChart {
     let padding = 8;
     let textContent =
       this.hoveredSegment.label +
-      ": " +
+      ": " + 
       this.hoveredSegment.value +
       " (" +
       this.hoveredSegment.percent +
@@ -168,7 +173,6 @@ class PieChart {
     translate(this.posX, this.posY);
     this.drawTitle("Pie Chart");
     this.drawPie();
-    this.drawLegend();
     this.drawTooltip();
     pop();
   }
