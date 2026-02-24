@@ -11,7 +11,7 @@ let backgroundColour = "#e3e3e3";
 function preload() {
     data = loadTable("data/dataset.csv", "csv", "header");
     barchart = new StackedBarChart(data, 50, 450, 400, 400, 15);
-    piechart = new PieChart(data, 50,450,400,400,15);
+    piechart = new PieChart(data, 50,550,450,450,15);
 }
 
 function setup() {

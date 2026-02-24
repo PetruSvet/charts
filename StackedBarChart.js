@@ -6,7 +6,7 @@ class StackedBarChart {
     this.chartWidth = chartWidth;
     this.chartHeight = chartHeight;
     this.barWidth = barWidth;
-    this.hoveredSegment = null;
+    this.hoveredSegment = null; // Currently hovered segment
 
     this.colourMap = {}; // Map to store colours for each stack
     this.legendKeys = []; // Store keys in an array
@@ -31,7 +31,6 @@ class StackedBarChart {
     "#F1C453",
     "#F29E4C"
     ];
-    this.colorMap = {};
     this.axisThickness = 3;
     this.labelSize = 12;
   }
@@ -41,6 +40,8 @@ class StackedBarChart {
     stackParameter, // What defines each stack within a bar
     valueParameter  // What defines the value of each stack
   ) {
+    this.colourMap = {};
+    this.legendKeys = [];
     this.barParameter = barParameter;
     this.stackParameter = stackParameter;
     this.valueParameter = valueParameter;
@@ -67,12 +68,12 @@ class StackedBarChart {
       }
 
       // If bar doesn't exist, create it
-      if (barIndex === -1) {
-        grouped.push({
-          label: barKey,
+      if (barIndex === -1) { // If bar doesn't exist
+        grouped.push({ // Create a new bar
+          label: barKey, // Bar label
           stacks: [], // array of { key, value }
         });
-        barIndex = grouped.length - 1;
+        barIndex = grouped.length - 1; // Get the index of the newly created bar
       }
 
       // 2. Find the stack inside the bar
@@ -118,8 +119,8 @@ class StackedBarChart {
     let roundTo = 500;
     this.maxValue = Math.ceil(max / roundTo) * roundTo;
 
-    // Assign colours
-    this.legendKeys = []; // store keys in an array
+    // STEP 1: Collect unique stack keys
+    let uniqueKeys = [];
 
     for (let i = 0; i < grouped.length; i++) {
       let stacks = grouped[i].stacks;
@@ -127,11 +128,23 @@ class StackedBarChart {
       for (let s = 0; s < stacks.length; s++) {
         let key = stacks[s].key;
 
-        if (!this.colourMap[key]) { // If the colour is not already assigned
-          this.colourMap[key] = this.generateColour();  // Generate a new colour
-          this.legendKeys.push(key); // Store the key in the legend
+        if (!uniqueKeys.includes(key)) {
+          uniqueKeys.push(key);
         }
       }
+    }
+
+    // STEP 2: Sort keys (optional but cleaner)
+    uniqueKeys.sort();
+
+    // STEP 3: Assign palette colours
+    for (let i = 0; i < uniqueKeys.length; i++) {
+      let key = uniqueKeys[i];
+
+      this.colourMap[key] =
+        this.palette[i % this.palette.length];
+
+      this.legendKeys.push(key);
     }
     this.meanValue = this.calculateMean(); // Set the mean value after cleaning data
   }
@@ -140,7 +153,7 @@ class StackedBarChart {
     push();
     translate(this.posX, this.posY);
 
-    this.drawTitle("Stacked Bar Chart");
+    this.drawTitle("Number of Appearances by Club and Position");
     this.drawAxis();
     this.drawBars();
     this.drawYAxisLabels();
@@ -152,7 +165,7 @@ class StackedBarChart {
     pop();
   }
 
-drawAxis() {
+  drawAxis() {
     noFill();
     stroke(this.axisColour);
     strokeWeight(this.axisThickness);
@@ -165,8 +178,7 @@ drawAxis() {
     return map(num, 0, this.maxValue, 0, this.chartHeight);
   }
 
-
-drawBars() {
+  drawBars() {
   noStroke();
   this.hoveredSegment = null; // reset every frame
 
@@ -217,7 +229,8 @@ drawBars() {
   }
 
   pop();
-}
+  }
+
   drawYAxisLabels() {
     fill(this.axisColour);
     noStroke();
@@ -262,15 +275,6 @@ drawBars() {
 
     pop();
   }
-
-  generateColour() {
-    return (
-      "#" + 
-      Math.floor(Math.random() * 0xffffff) 
-        .toString(16)  
-        .padStart(6, "0") 
-    );
-  }
   
   drawLegend() {
     let x = this.chartWidth + 40;
@@ -290,7 +294,7 @@ drawBars() {
     }
   }
 
-    drawTitle(title) {
+  drawTitle(title) {
     push();
     textAlign(CENTER, TOP);
     textSize(20);
@@ -301,7 +305,7 @@ drawBars() {
     pop();
   }
 
-    drawTooltip() {
+  drawTooltip() {
      if (!this.hoveredSegment) return;
 
     let padding = 8;    
@@ -326,7 +330,7 @@ drawBars() {
     text(textContent, mouseX + 10 + padding -this.posX, mouseY - 13 -this.posY);
     }
 
-    calculateMean() {
+  calculateMean() {
     let totalSum = 0;
 
     for (let i = 0; i < this.cleanedData.length; i++) { //Add all stacks 
@@ -343,7 +347,7 @@ drawBars() {
     return totalSum / this.cleanedData.length;
     }
 
-    drawMeanLine() {
+  drawMeanLine() {
     if (!this.meanValue) return;
 
     let y = -this.scaler(this.meanValue);
