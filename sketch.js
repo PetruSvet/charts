@@ -17,7 +17,7 @@ function preload() {
 function setup() {
     createCanvas(canvasWidth, canvasHeight);
     setupBarChart();
-  setupPieChart();
+    setupPieChart();
 }
 
 function draw() {
@@ -38,9 +38,12 @@ function setupPieChart()
 function setupBarChart()
 {
     barchart.cleanData("Club", "Position", "Appearances");
+    console.log(data);
     console.log(barchart.cleanedData);
     console.log(barchart.numBars);
     console.log(barchart.maxValue);
+    console.log(barchart.calculateMedian());
+    console.log(barchart.calculateMean());
 }
 
 function keyPressed() {

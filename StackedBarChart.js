@@ -13,7 +13,7 @@ class StackedBarChart {
     this.cleanedData = [];
 
     this.maxValue = 0;
-    this.numTicks = 8;
+    this.numTicks = 5;
     this.barParameter = "";
     this.stackParameter = "";
     this.valueParameter = "";
@@ -147,6 +147,7 @@ class StackedBarChart {
       this.legendKeys.push(key);
     }
     this.meanValue = this.calculateMean(); // Set the mean value after cleaning data
+    this.medianValue = this.calculateMedian(); // Set the median value after cleaning data
   }
 
   drawChart() {
@@ -161,6 +162,7 @@ class StackedBarChart {
     this.drawLegend();
     this.drawTooltip();
     this.drawMeanLine();
+    this.drawMedianLine();
 
     pop();
   }
@@ -349,20 +351,58 @@ class StackedBarChart {
 
   drawMeanLine() {
     if (!this.meanValue) return;
-
     let y = -this.scaler(this.meanValue);
-
     stroke("#c0392b");
     strokeWeight(2);
     drawingContext.setLineDash([6, 6]);
-
     line(0, y, this.chartWidth, y);
-
     noStroke();
     fill("#c0392b");
     textSize(12);
     textAlign(LEFT, CENTER);
     text("Mean: " + this.meanValue.toFixed(0), 5, y - 5);
     }
+
+  calculateMedian() {
+      let totals = [];
+
+      // Get total value per bar
+      for (let i = 0; i < this.cleanedData.length; i++) {
+        let bar = this.cleanedData[i];
+        let barTotal = 0;
+
+        for (let s = 0; s < bar.stacks.length; s++) {
+          barTotal += bar.stacks[s].value;
+        }
+
+        totals.push(barTotal);
+      }
+
+      // Sort totals
+      totals.sort((a, b) => a - b);
+
+      // Find middle
+      let middle = Math.floor(totals.length / 2);
+
+      if (totals.length % 2 === 0) {
+        return (totals[middle - 1] + totals[middle]) / 2;
+      } else {
+        return totals[middle];
+      }
+    }
+
+  drawMedianLine() {
+    if (!this.medianValue) return;
+    let y = -this.scaler(this.medianValue);
+    stroke("#0947cdff");
+    strokeWeight(2);
+    drawingContext.setLineDash([6,6]);
+    line(0,y,this.chartWidth,y);
+    noStroke();
+    fill("#0947cdff");
+    textSize(12);
+    textAlign(LEFT,CENTER);
+    text("Median: " + this.medianValue.toFixed(0),5,y-5);
+  }
 
 }

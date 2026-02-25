@@ -7,7 +7,7 @@ class PieChart {
     this.chartHeight = chartHeight;
 
     this.cleanedData = [];
-    this.hoveredSegment = null;
+    this.hoveredSegment = null; // Because drawPie runs every frame we reset it to null
 
     this.arcParameter = "";
     this.areaParameter = "";
@@ -46,7 +46,7 @@ class PieChart {
     for (let i = 0; i < this.data.rows.length; i++) {
       let row = this.data.rows[i].obj;
       let label = row[arcParameter];
-      let value = Number(row[areaParameter]);
+      let value = Number(row[areaParameter]); 
 
       if (!grouped[label]) grouped[label] = 0;
       grouped[label] += value;
