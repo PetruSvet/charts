@@ -31,7 +31,7 @@ function draw() {
 
 function setupPieChart()
 {
-  piechart.cleanData("Nationality","Goals");
+  piechart.cleanData("Nationality","Appearances");
   console.log(piechart.cleanedData);
 }
 

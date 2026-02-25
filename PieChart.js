@@ -61,8 +61,8 @@ class PieChart {
     // Sort largest → smallest
     groupedArray.sort((a, b) => b.value - a.value);
 
-    // Keep top 6
-    let topCount = 6;
+    // Keep top "?"
+    let topCount = 8;
     let topSegments = groupedArray.slice(0, topCount);
     let remaining = groupedArray.slice(topCount);
 
