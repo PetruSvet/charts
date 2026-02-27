@@ -12,41 +12,32 @@ function preload() {
     data = loadTable("data/dataset.csv", "csv", "header");
     barchart = new StackedBarChart(data, 50, 450, 400, 400, 15);
     piechart = new PieChart(data, 50,550,450,450,15);
-    histogram = new HistogramChart(data, 100, 500, 600, 400, 8);
 }
 
 function setup() {
     createCanvas(canvasWidth, canvasHeight);
     setupBarChart();
     setupPieChart();
-    setupHistogram();
 }
 
 function draw() {
   background(backgroundColour);
   if (chartMode === "bar") {
     barchart.drawChart();
-  } else if (chartMode === "pie") {
+  } else {
     piechart.drawChart();
-  } else if (chartMode === "histogram") {
-    histogram.drawChart();
   }
 }
 
-
-function setupPieChart() {
-  piechart.cleanData("Nationality", "Appearances");
+function setupPieChart()
+{
+  piechart.cleanData("Nationality","Goals"); // EACH SEGMENT = NATIONALITY, SIZE = APPEARANCES
   console.log(piechart.cleanedData);
-}
-
-function setupHistogram() {
-  histogram.cleanData("Age");
-  console.log(histogram.cleanedData);
 }
 
 function setupBarChart()
 {
-    barchart.cleanData("Club", "Position", "Appearances");
+    barchart.cleanData("Club", "Position", "Appearances"); // EACH BAR = CLUB, EACH STACK = POSITION, HEIGHT = APPEARANCES
     console.log(data);
     console.log(barchart.cleanedData);
     console.log(barchart.numBars);
@@ -58,10 +49,7 @@ function setupBarChart()
 function keyPressed() {
   if (chartMode === "bar") {
     chartMode = "pie";
-  } else if (chartMode === "pie") {
-    chartMode = "histogram";
-  } else if (chartMode === "histogram") {
+  } else {
     chartMode = "bar";
   }
 }
-

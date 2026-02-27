@@ -101,7 +101,7 @@ class StackedBarChart {
     this.cleanedData = grouped;
     this.numBars = grouped.length;
 
-    // Compute maxValue using loops
+    // Calculate maxValue using loops
     let max = 0;
     for (let i = 0; i < grouped.length; i++) {
       let sum = 0;
@@ -117,7 +117,7 @@ class StackedBarChart {
     }
 
     let roundTo = 500;
-    this.maxValue = Math.ceil(max / roundTo) * roundTo;
+    this.maxValue = Math.ceil(max / roundTo) * roundTo; // Round up to nearest 500
 
     // STEP 1: Collect unique stack keys
     let uniqueKeys = [];
